@@ -24,17 +24,16 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http
-                .csrf(csrf -> csrf.disable())
+                .cors(org.springframework.security.config.Customizer.withDefaults()) 
+                .csrf(csrf -> csrf.disable()) 
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(req -> {
-                    // Rotas Públicas de Cadastro e Login
+                    req.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll();
                     req.requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll();
                     req.requestMatchers(HttpMethod.POST, "/api/usuarios/cadastrar").permitAll();
-
-                    // Liberando a visualização pública das imagens para o frontend em React
                     req.requestMatchers(HttpMethod.GET, "/uploads/**").permitAll();
-
-                    // Rotas Privadas (Todas as outras exigem o token JWT)
+                    
+                    // Restante exige token
                     req.anyRequest().authenticated();
                 })
                 .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class)
@@ -48,6 +47,6 @@ public class SecurityConfig {
 
     @Bean
     public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder(); // Encriptador forte para as senhas no banco
+        return new BCryptPasswordEncoder(); 
     }
 }
